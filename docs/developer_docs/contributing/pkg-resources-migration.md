@@ -52,15 +52,11 @@ Some third-party dependencies may still use `pkg_resources`. Monitor your depend
 
 #### Known incompatibility: the `redshift` extra
 
-`sqlalchemy-redshift<0.9` imports `pkg_resources` in both `sqlalchemy_redshift/__init__.py` and `sqlalchemy_redshift/dialect.py`, so connecting to a `redshift://` database raises `ModuleNotFoundError` on setuptools 82 or later. Its `pkg_resources`-free 1.0.0 release requires SQLAlchemy 2.0, which Superset does not yet support (`sqlalchemy>=1.4.43,<2`), so the extra cannot simply be bumped.
+`sqlalchemy-redshift<0.9` imports `pkg_resources` in both `sqlalchemy_redshift/__init__.py` (module scope) and `sqlalchemy_redshift/dialect.py` (to resolve the bundled `redshift-ca-bundle.crt` used as the default `sslrootcert`), so loading the `redshift://` dialect would raise `ModuleNotFoundError` on setuptools 82 or later. Its `pkg_resources`-free 1.0.0 release requires SQLAlchemy 2.0, which Superset does not yet support (`sqlalchemy>=1.4.43,<2`), so the extra cannot simply be bumped.
 
-Until Superset moves to SQLAlchemy 2.0, deployments that use the Redshift dialect must pin an older setuptools in their own image:
+`superset/utils/pkg_resources_compat.py` bridges the gap. It registers a stand-in `pkg_resources` module in `sys.modules` providing only the names that dependency uses — `Distribution`, `DistributionNotFound`, `get_distribution`, `parse_version` and `resource_filename` — implemented on top of `importlib.metadata`, `importlib.util` and `packaging.version`. `install()` is a no-op when a real `pkg_resources` is importable, and any other attribute on the stand-in raises an `AttributeError` naming this module. It is called from `superset/db_engine_specs/redshift.py`, which SQLAlchemy imports (via `load_engine_specs()`) before it lazily loads the `redshift://` dialect.
 
-```bash
-pip install "apache-superset[redshift]" "setuptools<82"
-```
-
-Such deployments remain exposed to PYSEC-2026-3447, which only affects building source distributions with `MANIFEST.in` exclusions — not the Superset runtime.
+This is a bridge, not a destination: remove it once the `redshift` extra can move to `sqlalchemy-redshift>=1.0`.
 
 ## Migration Path
 

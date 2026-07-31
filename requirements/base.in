@@ -56,9 +56,9 @@ openapi-schema-validator>=0.6.3
 # exclusion patterns could fail to match non-ASCII filenames stored in a different
 # Unicode normalization form, publishing files meant to be excluded from an sdist.
 # setuptools 82.0.0 removed pkg_resources; Superset itself uses importlib.metadata,
-# but dependencies that still import pkg_resources (notably sqlalchemy-redshift <1.0,
-# the only version compatible with our SQLAlchemy 1.4 pin) cannot be installed
-# alongside it. See docs/developer_docs/contributing/pkg-resources-migration.md.
+# and superset.utils.pkg_resources_compat stands in for the dependencies that still
+# import it (notably sqlalchemy-redshift <1.0, the only release compatible with our
+# SQLAlchemy 1.4 pin). See docs/developer_docs/contributing/pkg-resources-migration.md.
 setuptools>=83.0.0
 
 # google-auth 2.53+ dropped its transitive dependency on cachetools, which is

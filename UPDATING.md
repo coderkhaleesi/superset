@@ -37,9 +37,14 @@ fails with `ModuleNotFoundError: No module named 'pkg_resources'`.
 This affects the `redshift` extra: `sqlalchemy-redshift<0.9` imports
 `pkg_resources` in `sqlalchemy_redshift/__init__.py` and `dialect.py`, and its
 `pkg_resources`-free 1.0.0 release requires SQLAlchemy 2.0, which Superset does
-not yet support (`sqlalchemy>=1.4.43,<2`). Deployments using the Redshift
-dialect must pin `setuptools<82` until Superset moves to SQLAlchemy 2.0, and
-those deployments remain exposed to the advisory above. See
+not yet support (`sqlalchemy>=1.4.43,<2`). To keep Redshift working,
+`superset.utils.pkg_resources_compat` registers a minimal `pkg_resources`
+stand-in (backed by `importlib.metadata` and `packaging`) when the real module
+is not importable; it is installed from `superset/db_engine_specs/redshift.py`,
+which is imported before the `redshift://` dialect is loaded. Third-party code
+that needs `pkg_resources` names beyond `Distribution`, `DistributionNotFound`,
+`get_distribution`, `parse_version` and `resource_filename` gets an
+`AttributeError` pointing at that module. See
 `docs/developer_docs/contributing/pkg-resources-migration.md`.
 
 ### Principal listing APIs now honour related-field filters
