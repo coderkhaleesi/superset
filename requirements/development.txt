@@ -578,8 +578,10 @@ nh3==0.3.6
     # via
     #   -c requirements/base-constraint.txt
     #   apache-superset
-nodeenv==1.8.0
-    # via pre-commit
+nodeenv==1.10.0
+    # via
+    #   -r requirements/development.in
+    #   pre-commit
 numpy==1.26.4
     # via
     #   -c requirements/base-constraint.txt
@@ -939,10 +941,9 @@ selenium==4.45.0
     #   apache-superset
 semver==3.0.4
     # via apache-superset-extensions-cli
-setuptools==80.9.0
+setuptools==83.0.0
     # via
     #   -c requirements/base-constraint.txt
-    #   nodeenv
     #   pandas-gbq
     #   pydata-google-auth
     #   zope-event

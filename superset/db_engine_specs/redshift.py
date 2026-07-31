@@ -32,7 +32,7 @@ from superset.errors import SupersetErrorType
 from superset.models.core import Database
 from superset.models.sql_lab import Query
 from superset.sql.parse import Table
-from superset.utils import json
+from superset.utils import json, pkg_resources_compat
 
 # sqlalchemy-redshift's own __init__ still imports pkg_resources (#36082);
 # the pinned range (see pyproject.toml) can't move to the pkg_resources-free
@@ -43,9 +43,14 @@ from superset.utils import json
 # create_engine(), which is what triggers SQLAlchemy's lazy "redshift://"
 # dialect entry-point loading that actually imports sqlalchemy_redshift. So
 # by the time that import happens, this filter is already registered.
-# Setuptools 80.x (pinned in requirements/base.txt) raises this as a plain
-# UserWarning, not DeprecationWarning -- don't add category=DeprecationWarning
-# here, it would silently stop matching.
+# Setuptools raises this as a plain UserWarning, not DeprecationWarning -- don't
+# add category=DeprecationWarning here, it would silently stop matching.
+#
+# Setuptools 82.0.0 (the pinned range in requirements/base.txt is above that)
+# removed pkg_resources entirely, so the same import raises ModuleNotFoundError
+# instead of warning. install() below registers a stand-in module for the three
+# names sqlalchemy-redshift needs, and is a no-op when a real pkg_resources is
+# importable -- which is when this filter is the one doing the work.
 #
 # Scoped to the sqlalchemy_redshift module (via stacklevel=2 in setuptools'
 # own warn() call, the warning is attributed to whatever imports
@@ -66,6 +71,7 @@ warnings.filterwarnings(
     category=UserWarning,
     module=r"sqlalchemy_redshift(?:\..*)?",
 )
+pkg_resources_compat.install()
 
 logger = logging.getLogger()
 

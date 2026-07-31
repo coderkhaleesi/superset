@@ -18,3 +18,8 @@
 #
 -e .[development,bigquery,druid,duckdb,fastmcp,gevent,gsheets,mysql,postgres,presto,prophet,trino,thumbnails]
 -e ./superset-extensions-cli[test]
+
+# nodeenv < 1.9.0 imports pkg_resources at module scope, which setuptools 82
+# removed (see requirements/base.in). pre-commit runs nodeenv to build the
+# environments for its node hooks, so the older release breaks linting.
+nodeenv>=1.9.1
