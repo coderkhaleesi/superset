@@ -197,6 +197,10 @@ postgres = ["psycopg2-binary==2.9.12"]
 presto = ["pyhive[presto]>=0.6.5"]
 trino = ["trino>=0.338.0"]
 prophet = ["prophet>=1.1.6, <2"]
+# sqlalchemy-redshift <0.9 imports pkg_resources, removed in setuptools 82, so
+# this extra needs setuptools<82 installed alongside it; 1.0 drops pkg_resources
+# but requires SQLAlchemy 2.0. See
+# docs/developer_docs/contributing/pkg-resources-migration.md.
 redshift = ["sqlalchemy-redshift>=0.8.1, <0.9"]
 risingwave = ["sqlalchemy-risingwave"]
 shillelagh = ["shillelagh[all]>=1.4.4, <2"]

@@ -24,6 +24,24 @@ assists people when migrating to a new version.
 
 ## Next
 
+### setuptools is pinned to >=83, which no longer ships pkg_resources
+
+`requirements/base.in` moved from `setuptools<81` to `setuptools>=83.0.0` to pick
+up the fix for PYSEC-2026-3447 / GHSA-h35f-9h28-mq5c (`MANIFEST.in` exclusion
+patterns could fail to match non-ASCII filenames stored in a different Unicode
+normalization form, publishing files meant to be excluded from an sdist).
+Superset's own code uses `importlib.metadata` and is unaffected, but setuptools
+82.0.0 removed `pkg_resources` entirely, so any dependency that still imports it
+fails with `ModuleNotFoundError: No module named 'pkg_resources'`.
+
+This affects the `redshift` extra: `sqlalchemy-redshift<0.9` imports
+`pkg_resources` in `sqlalchemy_redshift/__init__.py` and `dialect.py`, and its
+`pkg_resources`-free 1.0.0 release requires SQLAlchemy 2.0, which Superset does
+not yet support (`sqlalchemy>=1.4.43,<2`). Deployments using the Redshift
+dialect must pin `setuptools<82` until Superset moves to SQLAlchemy 2.0, and
+those deployments remain exposed to the advisory above. See
+`docs/developer_docs/contributing/pkg-resources-migration.md`.
+
 ### Principal listing APIs now honour related-field filters
 
 Two authorization-related listing behaviors changed for API clients. Neither

@@ -43,9 +43,15 @@ from superset.utils import json
 # create_engine(), which is what triggers SQLAlchemy's lazy "redshift://"
 # dialect entry-point loading that actually imports sqlalchemy_redshift. So
 # by the time that import happens, this filter is already registered.
-# Setuptools 80.x (pinned in requirements/base.txt) raises this as a plain
-# UserWarning, not DeprecationWarning -- don't add category=DeprecationWarning
-# here, it would silently stop matching.
+# Setuptools raises this as a plain UserWarning, not DeprecationWarning -- don't
+# add category=DeprecationWarning here, it would silently stop matching.
+#
+# Setuptools 82.0.0 removed pkg_resources outright, so with the setuptools
+# version pinned in requirements/base.txt the dialect import raises
+# ModuleNotFoundError instead of warning, and the redshift extra requires
+# pinning setuptools<82 (see docs/developer_docs/contributing/
+# pkg-resources-migration.md). This filter stays for those installations, where
+# the warning is still emitted.
 #
 # Scoped to the sqlalchemy_redshift module (via stacklevel=2 in setuptools'
 # own warn() call, the warning is attributed to whatever imports
