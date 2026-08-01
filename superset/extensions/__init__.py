@@ -154,7 +154,17 @@ async_query_manager: AsyncQueryManager = LocalProxy(
 cache_manager = CacheManager()
 celery_app = celery.Celery()
 csrf = CSRFProtect()
-db = get_sqla_class()()
+try:
+    from greenlet import getcurrent as _session_scope_ident
+except ImportError:  # pragma: no cover
+    from threading import get_ident as _session_scope_ident
+
+# Flask-SQLAlchemy 3 scopes ``db.session`` to the Flask application context, whereas
+# 2.x scoped it to the current thread/greenlet. Superset (and its test suite) relies on
+# a single session being shared across nested application contexts on the same worker
+# (e.g. a Celery task executed within a request context), so restore the 2.x thread /
+# greenlet scope to preserve that behavior.
+db = get_sqla_class()(session_options={"scopefunc": _session_scope_ident})
 
 # make_versioned() MUST be called immediately after db is constructed and before
 # any versioned model class is defined.  Continuum patches the SQLAlchemy
